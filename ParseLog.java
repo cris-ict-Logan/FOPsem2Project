@@ -9,30 +9,30 @@ public class ParseLog {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Enter mode (a, b, c, d, e): ");
+        System.out.println("Enter mode (A, B, C, D, E): ");
         String mode = scanner.nextLine();
 
 
         String filePath = "extracted_log";
 
         switch (mode) {
-            case "a":
+            case "A":
                 countDoneStrings(filePath);
                 break;
-            case "b":
+            case "B":
                 countPartitions(filePath);
                 break;
-            case "c":
+            case "C":
                 countUserErrors(filePath);
                 break;
-            case "d":
+            case "D":
                 calculateAverageExecutionTime(filePath);
                 break;
-            case "e":
+            case "E":
                 jobSubmissionStats(filePath);
                 break;
             default:
-                System.out.println("Invalid mode. Available modes are: a, b, c, d, e");
+                System.out.println("Invalid mode. Available modes are: A, B, C, D, E");
         }
     }
 
@@ -118,14 +118,14 @@ public class ParseLog {
         return dateFormat.parse(timestampStr);
     }
 
-    private static void countPartitions(String filePath) {
+    public static void countPartitions(String filePath) {
         String[] partitions = {
-                "cpu-opteron",
-                "gpu-v100s",
-                "gpu-k10",
-                "gpu-titan",
-                "cpu-epyc",
-                "gpu-k40c"
+            "cpu-opteron", 
+            "gpu-v100s", 
+            "gpu-k10", 
+            "gpu-titan", 
+            "cpu-epyc", 
+            "gpu-k40c"
         };
 
         Map<String, Integer> counts = new HashMap<>();
@@ -137,7 +137,7 @@ public class ParseLog {
             String line;
             while ((line = br.readLine()) != null) {
                 for (String partition : partitions) {
-                    if (line.contains(partition)) {
+                    if (line.contains("sched: Allocate JobId=") && line.contains(" Partition=" + partition)) {
                         counts.put(partition, counts.get(partition) + 1);
                     }
                 }
@@ -147,9 +147,10 @@ public class ParseLog {
         }
 
         for (String partition : partitions) {
-            System.out.println("Total number of jobs in '" + partition + "' partition: " + counts.get(partition));
+            System.out.println("Total number of '" + partition + "' strings: " + counts.get(partition));
         }
     }
+
 
     private static void countUserErrors(String filePath) {
         Map<String, Integer> userErrorCount = new HashMap<>();
@@ -180,11 +181,10 @@ public class ParseLog {
             System.out.println("User " + entry.getKey() + ": " + entry.getValue() + " errors");
         }
     }
-    
     private static void jobSubmissionStats(String filePath) {
         int totalJobs = 0;
         int successfulJobs = 0;
-        int failedJobs = 0;
+   
 
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
@@ -194,15 +194,14 @@ public class ParseLog {
                 } else if (line.contains("job_complete")) {
                     if (line.contains("done")) {
                         successfulJobs++;
-                    } else {
-                        failedJobs++;
-                    }
+                    } 
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        
+        int failedJobs = totalJobs - successfulJobs;
         System.out.println("Total number of job submissions: " + totalJobs);
         System.out.println("Number of successful job submissions: " + successfulJobs);
         System.out.println("Number of failed job submissions: " + failedJobs);
